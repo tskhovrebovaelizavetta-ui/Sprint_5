@@ -1,23 +1,17 @@
 import pytest
-from selenium import webdriver
-from base_page import BasePage
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from data import BASE_URL, AuthData, AdData, generate_email
 from locators.header import HeaderLocators
-from helpers import login_user
-from locators.header import HeaderLocators
-from helpers import login_user, register_user, generate_email
 
 class TestLogin:
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        self.driver = webdriver.Chrome()
-        self.driver.maximize_window()
-        self.driver.get("https://qa-desk.stand.praktikum-services.ru/")
-        self.page = BasePage(self.driver)
-    
-    def teardown(self):
-        self.driver.quit()
-    
-    def test_login_user(self):
-        login_user(self.driver)
-        user_name = self.page.wait_visible(HeaderLocators.USER_NAME)
-        assert "User" in user_name.text
+    def test_login_user(self, driver):
+        driver.get(BASE_URL)
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable(HeaderLocators.LOGIN_BUTTON)).click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "input[placeholder*='Email']"))).send_keys(AuthData.EXISTING_EMAIL)
+        driver.find_element(By.CSS_SELECTOR, "input[placeholder*='Пароль']").send_keys(AuthData.EXISTING_PASSWORD)
+        driver.find_element(By.XPATH, "//button[contains(text(), 'Войти')]").click()
+        
+        user_name = WebDriverWait(driver, 10).until(EC.visibility_of_element_located(HeaderLocators.USER_NAME))
+        assert AuthData.USER_NAME in user_name.text

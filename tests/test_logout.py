@@ -1,39 +1,21 @@
 import pytest
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from helpers import login_user, EXISTING_EMAIL, EXISTING_PASSWORD, open_login_form
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from data import BASE_URL, AuthData, AdData, generate_email
 from locators.header import HeaderLocators
-from base_page import BasePage
-from helpers import login_user, register_user, generate_email
-
-@pytest.fixture
-def driver():
-    chrome_options = Options()
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    service = Service()
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-    driver.maximize_window()
-    driver.implicitly_wait(5)
-    yield driver
-    driver.quit()
 
 class TestLogout:
     def test_logout_user(self, driver):
-        driver.get("https://qa-desk.stand.praktikum-services.ru/")
-        base_page = BasePage(driver)
+        driver.get(BASE_URL)
+        # Логин
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable(HeaderLocators.LOGIN_BUTTON)).click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "input[placeholder*='Email']"))).send_keys(AuthData.EXISTING_EMAIL)
+        driver.find_element(By.CSS_SELECTOR, "input[placeholder*='Пароль']").send_keys(AuthData.EXISTING_PASSWORD)
+        driver.find_element(By.XPATH, "//button[contains(text(), 'Войти')]").click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located(HeaderLocators.USER_NAME))
         
-        # Авторизация
-        login_user(driver)
-        
-        # Проверка что пользователь авторизован
-        base_page.wait_visible(HeaderLocators.USER_NAME)
-        
-        # Выход
-        base_page.wait_click(HeaderLocators.LOGOUT_BUTTON)
-        
-        # Проверка исчезновения аватара и появления кнопки входа
-        base_page.wait_visible(HeaderLocators.LOGIN_BUTTON)
-        # Проверяем что имя пользователя исчезло
-        assert not base_page.driver.find_elements(*HeaderLocators.USER_NAME)
+        # Логаут
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable(HeaderLocators.LOGOUT_BUTTON)).click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located(HeaderLocators.LOGIN_BUTTON))
+        assert len(driver.find_elements(*HeaderLocators.USER_NAME)) == 0
