@@ -30,6 +30,12 @@ def wait_for_element(driver, locator, timeout=10):
     )
 
 
+def wait_for_presence(driver, locator, timeout=10):
+    return WebDriverWait(driver, timeout).until(
+        EC.presence_of_element_located(locator)
+    )
+
+
 def wait_for_invisibility(driver, locator, timeout=10):
     return WebDriverWait(driver, timeout).until(
         EC.invisibility_of_element_located(locator)
@@ -41,4 +47,6 @@ def login_user(driver, email, password):
     wait_and_send_keys(driver, LoginPopupLocators.EMAIL_INPUT, email)
     wait_and_send_keys(driver, LoginPopupLocators.PASSWORD_INPUT, password)
     wait_and_click(driver, LoginPopupLocators.BUTTON_LOGIN)
-    wait_for_element(driver, HeaderLocators.USER_AVATAR)
+    WebDriverWait(driver, 10).until(
+        EC.visibility_of_element_located(HeaderLocators.USER_AVATAR)
+    )

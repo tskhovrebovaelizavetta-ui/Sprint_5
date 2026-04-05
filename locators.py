@@ -27,6 +27,8 @@ class RegisterPopupLocators:
 
 class ModalLocators:
     MODAL_TITLE = (By.CSS_SELECTOR, "div[class*='popUp_titleRow'] h1")
+    # Локатор с текстом для проверки наличия элемента (замечание 3)
+    MODAL_TITLE_AUTH_REQUIRED = (By.XPATH, "//div[contains(@class, 'popUp_titleRow')]//h1[text()='Чтобы разместить объявление, авторизуйтесь']")
 
 
 class CreateAdLocators:
